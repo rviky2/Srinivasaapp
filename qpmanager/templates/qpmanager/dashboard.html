@@ -1,0 +1,108 @@
+{% extends 'qpmanager/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-center mb-0">
+                    <i class="fas fa-tachometer-alt me-2"></i>
+                    Admin Dashboard
+                </h2>
+            </div>
+            <div class="card-body">
+                <!-- Statistics -->
+                <div class="row">
+                    <div class="col-md-4 mb-4">
+                        <div class="card text-white bg-primary">
+                            <div class="card-body text-center">
+                                <h1 class="display-4">{{ department_count }}</h1>
+                                <h5 class="card-title">Departments</h5>
+                                <a href="{% url 'admin:qpmanager_department_changelist' %}" class="btn btn-light mt-2">
+                                    <i class="fas fa-cog me-1"></i> Manage
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card text-white bg-success">
+                            <div class="card-body text-center">
+                                <h1 class="display-4">{{ subject_count }}</h1>
+                                <h5 class="card-title">Subjects</h5>
+                                <a href="{% url 'admin:qpmanager_subject_changelist' %}" class="btn btn-light mt-2">
+                                    <i class="fas fa-cog me-1"></i> Manage
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-4">
+                        <div class="card text-white bg-info">
+                            <div class="card-body text-center">
+                                <h1 class="display-4">{{ question_paper_count }}</h1>
+                                <h5 class="card-title">Question Papers</h5>
+                                <a href="{% url 'admin:qpmanager_questionpaper_changelist' %}" class="btn btn-light mt-2">
+                                    <i class="fas fa-cog me-1"></i> Manage
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <h4 class="mb-3"><i class="fas fa-bolt me-2"></i>Quick Actions</h4>
+                <div class="d-flex flex-wrap gap-2 mb-4">
+                    <a href="{% url 'admin:qpmanager_department_add' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i> Add Department
+                    </a>
+                    <a href="{% url 'admin:qpmanager_subject_add' %}" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i> Add Subject
+                    </a>
+                    <a href="{% url 'admin:qpmanager_questionpaper_add' %}" class="btn btn-info text-white">
+                        <i class="fas fa-plus me-1"></i> Add Question Paper
+                    </a>
+                </div>
+                
+                <!-- Recent Uploads -->
+                <h4 class="mb-3"><i class="fas fa-clock me-2"></i>Recent Uploads</h4>
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Title</th>
+                                <th>Subject</th>
+                                <th>Department</th>
+                                <th>Upload Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if recent_papers %}
+                                {% for paper in recent_papers %}
+                                    <tr>
+                                        <td>{{ paper.title }}</td>
+                                        <td>{{ paper.subject.name }}</td>
+                                        <td>{{ paper.subject.department.name }}</td>
+                                        <td>{{ paper.upload_date|date:"M d, Y" }}</td>
+                                        <td>
+                                            <a href="{% url 'qpmanager:download_paper' paper.id %}" class="btn btn-sm btn-success">
+                                                <i class="fas fa-download me-1"></i> Download
+                                            </a>
+                                            <a href="{% url 'admin:qpmanager_questionpaper_change' paper.id %}" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-edit me-1"></i> Edit
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="text-center">No recent question papers uploaded.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

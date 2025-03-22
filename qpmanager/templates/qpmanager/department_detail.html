@@ -1,0 +1,105 @@
+{% extends 'qpmanager/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'qpmanager:home' %}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ department.name }}</li>
+            </ol>
+        </nav>
+    </div>
+    
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-center mb-0">
+                    <i class="fas fa-graduation-cap me-2"></i>
+                    {{ department.name }} Department - Subjects
+                </h2>
+            </div>
+            <div class="card-body">
+                {% if department.description %}
+                    <div class="alert alert-info mb-4">
+                        <p class="mb-0">{{ department.description }}</p>
+                    </div>
+                {% endif %}
+                
+                <!-- Semester Filter -->
+                <div class="card mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter by Semester</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="get" class="row g-3">
+                            <div class="col-md-6">
+                                <select name="semester" id="semester" class="form-select">
+                                    <option value="">All Semesters</option>
+                                    {% for sem_val, sem_name in semester_choices %}
+                                        <option value="{{ sem_val }}" {% if selected_semester == sem_val|stringformat:"i" %}selected{% endif %}>
+                                            {{ sem_name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-1"></i> Apply Filter
+                                </button>
+                                <a href="{% url 'qpmanager:department_detail' department.slug %}" class="btn btn-secondary">
+                                    <i class="fas fa-times me-1"></i> Clear Filter
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    {% if subjects %}
+                        {% for subject in subjects %}
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">{{ subject.name }}</h5>
+                                        <span class="paper-count">{{ subject.paper_count }} Papers</span>
+                                    </div>
+                                    <div class="card-body">
+                                        {% if subject.subject_code %}
+                                            <p class="card-text mb-2"><strong>Subject Code:</strong> {{ subject.subject_code }}</p>
+                                        {% endif %}
+                                        {% if subject.description %}
+                                            <p class="card-text">{{ subject.description|truncatewords:20 }}</p>
+                                        {% else %}
+                                            <p class="card-text text-muted">No description available</p>
+                                        {% endif %}
+                                        <p class="card-text mb-3"><strong>Semester:</strong> 
+                                            {% for sem_val, sem_name in semester_choices %}
+                                                {% if subject.semester == sem_val %}
+                                                    {{ sem_name }}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </p>
+                                        <a href="{% url 'qpmanager:subject_detail' department.slug subject.slug %}" class="btn btn-primary">
+                                            <i class="fas fa-file-alt me-1"></i> View Question Papers
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12 text-center">
+                            <p class="lead">No subjects available for this department yet.</p>
+                            {% if user.is_staff %}
+                                <a href="{% url 'admin:qpmanager_subject_add' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-1"></i> Add Subject
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

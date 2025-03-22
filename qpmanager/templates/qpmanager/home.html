@@ -1,0 +1,92 @@
+{% extends 'qpmanager/base.html' %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center py-5">
+                <h1 class="display-4 fw-bold">Welcome to SIT eLibrary Portal</h1>
+                <p class="lead">Access question papers from all departments and semesters in one place</p>
+                <hr class="my-4 bg-white">
+                <p>Browse by department to find the resources you need</p>
+                
+                <!-- Search Box -->
+                <div class="mt-4">
+                    <form method="get" action="{% url 'qpmanager:search' %}" class="d-flex justify-content-center">
+                        <div class="input-group" style="max-width: 600px;">
+                            <input type="text" name="q" class="form-control form-control-lg" placeholder="Search for subjects, question papers...">
+                            <button class="btn btn-light btn-lg" type="submit">
+                                <i class="fas fa-search me-1"></i> Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Departments Section -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-center mb-0">
+                    <i class="fas fa-university me-2"></i>
+                    Browse by Department
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% if departments %}
+                        {% for department in departments %}
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card department-card h-100">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">{{ department.name }}</h5>
+                                        <span class="subject-count">{{ department.subject_count }} Subjects</span>
+                                    </div>
+                                    <div class="card-body">
+                                        {% if department.description %}
+                                            <p class="card-text">{{ department.description|truncatewords:30 }}</p>
+                                        {% else %}
+                                            <p class="card-text text-muted">No description available</p>
+                                        {% endif %}
+                                        <a href="{% url 'qpmanager:department_detail' department.slug %}" class="btn btn-primary">
+                                            <i class="fas fa-arrow-right me-1"></i> Explore Subjects
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12 text-center">
+                            <p class="lead">No departments available yet.</p>
+                            {% if user.is_staff %}
+                                <a href="{% url 'admin:qpmanager_department_add' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-1"></i> Add Department
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .department-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+        border-radius: 10px;
+    }
+    
+    .department-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+</style>
+{% endblock %} 
