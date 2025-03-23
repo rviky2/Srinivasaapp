@@ -26,10 +26,10 @@ SECRET_KEY = 'django-insecure-cd34b(ae4e#uh8g0e-$#%a_wkcg_2m#0et@+cug6bc0r&#v#@l
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.azurewebsites.net']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.azurewebsites.net', '.sitmng.ac.in']
 
 # CSRF settings
-CSRF_TRUSTED_ORIGINS = ['https://qpapers-gfcue9dfd7bqgmb2.centralindia-01.azurewebsites.net/']
+CSRF_TRUSTED_ORIGINS = ['https://qpapers-gfcue9dfd7bqgmb2.centralindia-01.azurewebsites.net/','http://library.sitmng.ac.in/']
 
 
 # Application definition
