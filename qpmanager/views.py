@@ -67,13 +67,26 @@ def subject_detail(request, dept_slug, subj_slug):
 def download_question_paper(request, pk):
     """View to download a question paper"""
     question_paper = get_object_or_404(QuestionPaper, pk=pk)
-    file_path = question_paper.file.path
     
-    if os.path.exists(file_path):
-        response = FileResponse(open(file_path, 'rb'), as_attachment=True, filename=question_paper.filename())
+    # Get the storage backend being used
+    storage = question_paper.file.storage
+    
+    try:
+        # Try to use the path approach (works for local file system)
+        file_path = question_paper.file.path
+        if os.path.exists(file_path):
+            response = FileResponse(open(file_path, 'rb'), as_attachment=True, filename=question_paper.filename())
+            return response
+    except NotImplementedError:
+        # For cloud storage like Azure Blob Storage that doesn't support path
+        file_content = question_paper.file.read()
+        response = HttpResponse(file_content, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="{question_paper.filename()}"'
         return response
-    else:
-        return HttpResponse("File not found", status=404)
+    except Exception as e:
+        return HttpResponse(f"Error accessing file: {str(e)}", status=500)
+        
+    return HttpResponse("File not found", status=404)
 
 @login_required
 def dashboard(request):
