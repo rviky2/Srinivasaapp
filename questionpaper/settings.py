@@ -29,7 +29,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.azurewebsites.net']
 
 # CSRF settings
-CSRF_TRUSTED_ORIGINS = ['https://qpaper-app.azurewebsites.net']
+CSRF_TRUSTED_ORIGINS = ['https://qpapers-gfcue9dfd7bqgmb2.centralindia-01.azurewebsites.net/']
 
 
 # Application definition
