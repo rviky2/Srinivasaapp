@@ -80,29 +80,20 @@ WSGI_APPLICATION = 'questionpaper.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-if DEBUG:
-    # Use SQLite for local development
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+# Always use PostgreSQL
+DATABASES = {
+    'default': {
+        'ENGINE': os.environ.get('DBENGINE', 'django.db.backends.postgresql'),
+        'NAME': os.environ.get('DBNAME', 'questionpaper_db'),
+        'USER': os.environ.get('DBUSER', 'postgres'),
+        'PASSWORD': os.environ.get('DBPASS', 'admin'),
+        'HOST': os.environ.get('DBHOST', 'qpaper-db.postgres.database.azure.com'),
+        'PORT': os.environ.get('DBPORT', '5432'),
+        'OPTIONS': {
+            'sslmode': 'require'
         }
     }
-else:
-    # Use PostgreSQL for production
-    DATABASES = {
-        'default': {
-            'ENGINE': os.environ.get('DBENGINE', 'django.db.backends.postgresql'),
-            'NAME': os.environ.get('DBNAME', 'questionpaper_db'),
-            'USER': os.environ.get('DBUSER', 'postgres'),
-            'PASSWORD': os.environ.get('DBPASS', 'admin'),
-            'HOST': os.environ.get('DBHOST', 'localhost'),
-            'PORT': os.environ.get('DBPORT', '5432'),
-            'OPTIONS': {
-                'sslmode': 'require'
-            }
-        }
-    }
+}
 
 
 # Password validation
@@ -149,18 +140,35 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Azure Storage configuration for production
-if not DEBUG:
-    # Azure Storage settings
-    AZURE_ACCOUNT_NAME = os.environ.get('AZURE_ACCOUNT_NAME', '')
-    AZURE_ACCOUNT_KEY = os.environ.get('AZURE_ACCOUNT_KEY', '')
-    AZURE_CONTAINER = os.environ.get('AZURE_CONTAINER', 'media')
-    
-    # Use Azure for media files in production
-    DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
-    
-    # Set custom media URL if needed
-    MEDIA_URL = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/'
+# Azure Storage configuration
+# Get Azure Storage settings from environment variables
+AZURE_ACCOUNT_NAME = os.environ.get('AZURE_ACCOUNT_NAME', '')
+AZURE_ACCOUNT_KEY = os.environ.get('AZURE_ACCOUNT_KEY', '')
+AZURE_CONTAINER = os.environ.get('AZURE_CONTAINER', 'media')
+
+# Diagnostic prints
+print(f"DEBUG: AZURE_ACCOUNT_NAME: {AZURE_ACCOUNT_NAME}")
+print(f"DEBUG: AZURE_CONTAINER: {AZURE_CONTAINER}")
+print(f"DEBUG: AZURE_ACCOUNT_KEY exists: {bool(AZURE_ACCOUNT_KEY)}")
+
+# Only use Azure Storage if all required settings are available
+if AZURE_ACCOUNT_NAME and AZURE_ACCOUNT_KEY and AZURE_CONTAINER:
+    try:
+        # Use Azure for media files
+        DEFAULT_FILE_STORAGE = 'storages.backends.azure_storage.AzureStorage'
+        
+        # Set custom media URL
+        MEDIA_URL = f'https://{AZURE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER}/'
+        
+        # Log the use of Azure Storage
+        print("Using Azure Blob Storage for media files")
+    except Exception as e:
+        print(f"ERROR setting up Azure Storage: {e}")
+        # Fall back to local storage in case of error
+        print("Falling back to local storage due to error")
+else:
+    # Log the fallback to local storage
+    print("Azure Storage settings incomplete, using local storage for media files")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
