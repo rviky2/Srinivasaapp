@@ -1,9 +1,14 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, FileResponse
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
+from django.contrib import messages
+from django.core.files.base import ContentFile
 from .models import Department, Subject, QuestionPaper
+from .forms import BulkUploadForm
 import os
+import zipfile
+import io
 
 def home(request):
     """Homepage view showing all departments"""
@@ -142,3 +147,77 @@ def search(request):
     }
     
     return render(request, 'qpmanager/search.html', context)
+
+@login_required
+def bulk_upload(request):
+    """View for bulk uploading question papers"""
+    if request.method == 'POST':
+        form = BulkUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            subject = form.cleaned_data['subject']
+            year = form.cleaned_data['year']
+            month = form.cleaned_data['month']
+            zip_file = form.cleaned_data['zip_file']
+            
+            # Track upload stats
+            success_count = 0
+            error_count = 0
+            error_messages = []
+            
+            # Process the ZIP file
+            with zipfile.ZipFile(zip_file) as z:
+                for pdf_name in form.pdf_files:
+                    try:
+                        # Extract the file
+                        pdf_content = z.read(pdf_name)
+                        
+                        # Create the question paper object
+                        title = os.path.splitext(os.path.basename(pdf_name))[0]
+                        
+                        question_paper = QuestionPaper(
+                            title=title,
+                            subject=subject,
+                            subject_code=subject.subject_code,
+                            year=year,
+                            month=month
+                        )
+                        
+                        # Save the file content
+                        file_name = f"{title}.pdf"
+                        question_paper.file.save(file_name, ContentFile(pdf_content), save=False)
+                        
+                        # Save the question paper
+                        question_paper.save()
+                        success_count += 1
+                    except Exception as e:
+                        error_count += 1
+                        error_messages.append(f"Error processing {pdf_name}: {str(e)}")
+            
+            # Show success message
+            if success_count > 0:
+                messages.success(
+                    request, 
+                    f"Successfully uploaded {success_count} question papers to {subject.name}"
+                )
+            
+            # Show error message if any
+            if error_count > 0:
+                messages.error(
+                    request,
+                    f"Failed to upload {error_count} files. See details below."
+                )
+                for error in error_messages:
+                    messages.error(request, error)
+            
+            # Redirect to subject detail page
+            return redirect('qpmanager:subject_detail', 
+                           dept_slug=subject.department.slug, 
+                           subj_slug=subject.slug)
+    else:
+        form = BulkUploadForm()
+    
+    context = {
+        'form': form,
+        'title': 'Bulk Upload Question Papers'
+    }
+    return render(request, 'qpmanager/bulk_upload.html', context)

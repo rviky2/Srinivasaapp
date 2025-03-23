@@ -8,6 +8,7 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('search/', views.search, name='search'),
     path('download/<int:pk>/', views.download_question_paper, name='download_paper'),
+    path('bulk-upload/', views.bulk_upload, name='bulk_upload'),
     path('<slug:slug>/', views.department_detail, name='department_detail'),
     path('<slug:dept_slug>/<slug:subj_slug>/', views.subject_detail, name='subject_detail'),
 ] 
