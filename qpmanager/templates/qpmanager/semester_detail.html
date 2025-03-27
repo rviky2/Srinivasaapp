@@ -1,0 +1,65 @@
+{% extends 'qpmanager/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'qpmanager:home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'qpmanager:department_detail' department.slug %}">{{ department.name }}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'qpmanager:scheme_detail' department.slug scheme.slug %}">{{ scheme.year }} Scheme</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Semester {{ semester.number }}</li>
+            </ol>
+        </nav>
+    </div>
+    
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-center mb-0">
+                    <i class="fas fa-book me-2"></i>
+                    Semester {{ semester.number }} - Subjects
+                </h2>
+            </div>
+            <div class="card-body">                
+                <div class="row">
+                    {% if subjects %}
+                        {% for subject in subjects %}
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">{{ subject.name }}</h5>
+                                        <span class="paper-count">{{ subject.paper_count }} Papers</span>
+                                    </div>
+                                    <div class="card-body">
+                                        {% if subject.subject_code %}
+                                            <p class="card-text mb-2"><strong>Subject Code:</strong> {{ subject.subject_code }}</p>
+                                        {% endif %}
+                                        {% if subject.description %}
+                                            <p class="card-text">{{ subject.description|truncatewords:20 }}</p>
+                                        {% else %}
+                                            <p class="card-text text-muted">No description available</p>
+                                        {% endif %}
+                                        <a href="{% url 'qpmanager:subject_detail' department.slug scheme.slug semester.slug subject.slug %}" class="btn btn-primary">
+                                            <i class="fas fa-file-alt me-1"></i> View Question Papers
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="col-12 text-center">
+                            <p class="lead">No subjects available for this semester yet.</p>
+                            {% if user.is_staff %}
+                                <a href="{% url 'admin:qpmanager_subject_add' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-1"></i> Add Subject
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

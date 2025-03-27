@@ -1,0 +1,144 @@
+{% extends 'qpmanager/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'qpmanager:home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'qpmanager:department_detail' department.slug %}">{{ department.name }}</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'qpmanager:scheme_detail' department.slug scheme.slug %}">{{ scheme.year }} Scheme</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'qpmanager:semester_detail' department.slug scheme.slug semester.slug %}">Semester {{ semester.number }}</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ subject.name }}</li>
+            </ol>
+        </nav>
+    </div>
+    
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-center mb-0">
+                    <i class="fas fa-file-alt me-2"></i>
+                    {{ subject.name }} - Question Papers
+                </h2>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Subject Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush">
+                                    {% if subject.subject_code %}
+                                        <li class="list-group-item"><strong>Subject Code:</strong> {{ subject.subject_code }}</li>
+                                    {% endif %}
+                                    <li class="list-group-item"><strong>Department:</strong> {{ department.name }}</li>
+                                    <li class="list-group-item"><strong>Scheme:</strong> {{ scheme.year }}</li>
+                                    <li class="list-group-item"><strong>Semester:</strong> {{ semester.number }}</li>
+                                    {% if subject.description %}
+                                        <li class="list-group-item"><strong>Description:</strong> {{ subject.description }}</li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filter Question Papers</h5>
+                            </div>
+                            <div class="card-body">
+                                <form method="get" class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="year" class="form-label">Year</label>
+                                        <select name="year" id="year" class="form-select">
+                                            <option value="">All Years</option>
+                                            {% for y in years %}
+                                                <option value="{{ y }}" {% if selected_year == y|stringformat:"i" %}selected{% endif %}>{{ y }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="month" class="form-label">Month</label>
+                                        <select name="month" id="month" class="form-select">
+                                            <option value="">All Months</option>
+                                            {% for m_val, m_name in month_choices %}
+                                                <option value="{{ m_val }}" {% if selected_month == m_val %}selected{% endif %}>{{ m_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-12 text-end">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-search me-1"></i> Apply Filter
+                                        </button>
+                                        <a href="{% url 'qpmanager:subject_detail' department.slug scheme.slug semester.slug subject.slug %}" class="btn btn-secondary">
+                                            <i class="fas fa-times me-1"></i> Clear Filter
+                                        </a>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="mb-0">Question Papers</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if question_papers %}
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Subject Code</th>
+                                            <th>Year</th>
+                                            <th>Month</th>
+                                            <th>Upload Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for paper in question_papers %}
+                                            <tr>
+                                                <td>{{ paper.title }}</td>
+                                                <td>{{ paper.subject_code }}</td>
+                                                <td>{{ paper.year }}</td>
+                                                <td>{{ paper.get_month_display }}</td>
+                                                <td>{{ paper.upload_date|date:"M d, Y" }}</td>
+                                                <td>
+                                                    <a href="{% url 'qpmanager:download_paper' paper.id %}" class="btn btn-sm btn-primary">
+                                                        <i class="fas fa-download me-1"></i> Download
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <p class="mb-0">No question papers found for this subject{% if selected_year or selected_month %} with the selected filters{% endif %}.</p>
+                                {% if user.is_staff %}
+                                    <hr>
+                                    <p class="mb-0">
+                                        <a href="{% url 'admin:qpmanager_questionpaper_add' %}" class="btn btn-primary">
+                                            <i class="fas fa-plus me-1"></i> Add Question Paper
+                                        </a>
+                                        <a href="{% url 'qpmanager:bulk_upload' %}" class="btn btn-primary">
+                                            <i class="fas fa-upload me-1"></i> Bulk Upload
+                                        </a>
+                                    </p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
